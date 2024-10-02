@@ -1,8 +1,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Scanner;
 
 public class Client {
@@ -41,6 +40,45 @@ public class Client {
 
         finally {
             if(s != null && !s.isClosed()) {
+                s.close();
+            }
+        }
+    }
+
+    /**
+     * Performs communication with the server over UDP.
+     * @param serverIP The IP Address or hostname of the server.
+     * @param port The port number the server is listening on.
+     */
+    public static void UDPClient(String serverIP, int port){
+        DatagramSocket s = null;
+        String testString = "Test string";
+        try {
+            s = new DatagramSocket();
+
+            // Encode string into bytes for transmission
+            byte[] byteStr = testString.getBytes();
+
+            // Determines IP Address of the server given a hostname or IP
+            InetAddress host = InetAddress.getByName(serverIP);
+            DatagramPacket request = new DatagramPacket(byteStr, byteStr.length, host, port);
+            s.send(request);
+
+            byte[] buffer = new byte[1000]; // Buffer used to hold incoming datagram
+            DatagramPacket reply = new DatagramPacket(buffer, buffer.length); // Receive response
+
+            // Test connection to server by sending message and receiving a reply
+            s.receive(reply);
+            System.out.println("Reply: " + new String(reply.getData()));
+
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(s != null) {
                 s.close();
             }
         }
