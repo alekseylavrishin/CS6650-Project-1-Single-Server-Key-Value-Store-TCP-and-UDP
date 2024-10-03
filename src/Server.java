@@ -69,12 +69,25 @@ public class Server {
                         } else { // If key cannot be found in hMap
                             // Return 'cannot be found' message to client
                             out.writeUTF("Key " + key + " cannot be found");
+
                         }
 
                     } else if(operation.equals("DELETE")) {
                         // confirm to server that DELETE operation is commencing
                         out.writeUTF("Server initializing DELETE operation");
-                        // Invoke homogeneous DELETE function
+
+                        String key = in.readUTF();
+                        out.writeUTF("Key " + key + " received by server");
+
+                        if(hMap.containsKey(key)) {
+                            // If key exists, delete key from hMap
+                            hMap.remove(key);
+                            out.writeUTF("Key " + key + " deleted from server");
+                        } else {
+                            // If key is not found in server
+                            out.writeUTF("Key " + key +  " cannot be found in server");
+                        }
+
 
                     } else {
                         // Faulty operation provided, send back error message
