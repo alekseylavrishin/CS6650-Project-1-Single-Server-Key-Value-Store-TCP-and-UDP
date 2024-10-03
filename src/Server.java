@@ -14,8 +14,6 @@ public class Server {
      * @param port The port the server will listen on.
      */
     public static void TCPServer(String serverIP, int port, HashMap<String, String> hMap) {
-        // TODO: generalize hashmap operations in homogeneous functions
-
 
         try {
             // Translate String IP or hostname to InetAddress type
@@ -58,8 +56,20 @@ public class Server {
 
                     } else if(operation.equals("GET")) {
                         // confirm to server that GET operation is commencing
-                        out.writeUTF("Server initializing PUT operation");
-                        // Invoke homogeneous GET function
+                        out.writeUTF("Server initializing GET operation");
+
+                        String key = in.readUTF();
+                        out.writeUTF("Key " + key + " received by server");
+
+                        if(hMap.containsKey(key)) {
+                            // Return value to client
+                            String value = hMap.get(key);
+                            out.writeUTF(value);
+
+                        } else { // If key cannot be found in hMap
+                            // Return 'cannot be found' message to client
+                            out.writeUTF("Key " + key + " cannot be found");
+                        }
 
                     } else if(operation.equals("DELETE")) {
                         // confirm to server that DELETE operation is commencing

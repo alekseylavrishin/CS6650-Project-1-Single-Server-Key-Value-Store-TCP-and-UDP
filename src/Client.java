@@ -82,24 +82,27 @@ public class Client {
         // Tell server a DELETE operation is commencing
         out.writeUTF("DELETE");
         String data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("Response from the server: " + data);
 
         // Write key and get response from server
         out.writeUTF(key);
         data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("Response from the server: " + data);
     }
 
     public static void TCPget(String key, DataInputStream in, DataOutputStream out) throws IOException {
         // Tell server a GET operation is commencing, then print confirmation response from server
         out.writeUTF("GET");
         String data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("RESPONSE: " + data);
 
         // Get value from server
         out.writeUTF(key);
         data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("RESPONSE: " + data);
+
+        data = in.readUTF();
+        System.out.println("RESPONSE: " + data);
     }
 
     public static void TCPput(String key, String value, DataInputStream in, DataOutputStream out) throws IOException {
