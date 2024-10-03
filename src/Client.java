@@ -25,7 +25,6 @@ public class Client {
 
             Scanner scanner = new Scanner(System.in);
 
-
             // Choose type of operation
             System.out.println("Enter '1' to perform PUT");
             System.out.println("Enter '2' to perform GET");
@@ -75,7 +74,6 @@ public class Client {
             }
         }
     }
-
 
     /**
      * Handles the client-side execution of a TCP DELETE operation.
@@ -154,8 +152,6 @@ public class Client {
         // Receive confirmation that key, value pair has been created
         data = in.readUTF();
         System.out.println("RESPONSE: " + data);
-
-
 
     }
 
