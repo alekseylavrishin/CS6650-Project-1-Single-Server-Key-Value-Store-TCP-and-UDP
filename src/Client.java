@@ -32,6 +32,7 @@ public class Client {
             System.out.println("Enter '3' to perform DELETE");
 
             int selection = scanner.nextInt();
+            scanner.nextLine(); // deal with \n left by scanner.nextInt()
 
 
             if(selection == 1) {
@@ -106,17 +107,21 @@ public class Client {
         // Tell server a PUT operation is commencing, then receive confirmation response from server
         out.writeUTF("PUT");
         String data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("RESPONSE: " + data);
 
-        // Then write key to server and receive confirmation response
+        // Then write key to server and receive confirmation that key is received
         out.writeUTF(key);
         data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("RESPONSE: " + data);
 
-        // Lastly, write value to server and receive confirmation back
+        // Write value to server and receive confirmation that value is received
         out.writeUTF(value);
         data = in.readUTF();
-        System.out.print("Response from the server: " + data);
+        System.out.println("RESPONSE: " + data);
+
+        // Receive confirmation that key, value pair has been created
+        data = in.readUTF();
+        System.out.println("RESPONSE: " + data);
 
 
 
@@ -169,13 +174,14 @@ public class Client {
      * If provided input is not '1' or '2', function will rerun until appropriate input is given.
      * @param scanner The Scanner used for taking user input from System.in.
      */
-    public static void askForCommType(Scanner scanner, String serverIP, int port) {
+    public static void askForCommType(Scanner scanner, String serverIP, int port) throws Exception {
         System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
         int selection = scanner.nextInt();
 
         if(selection == 1) {
-            //TCPServer(serverIP, port);
-            System.out.println("TCP");
+            System.out.println("TCP Communication Selected");
+            TCPClient(serverIP, port);
+
         } else if(selection == 2) {
             //UDPServer(serverIp, port);
             System.out.println("UDP");
