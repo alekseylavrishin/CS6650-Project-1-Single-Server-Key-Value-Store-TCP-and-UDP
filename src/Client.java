@@ -12,7 +12,7 @@ public class Client {
      * @param port The port number the server is listening on.
      * @throws Exception Throws exception if the server connection is interrupted or unsuccessful.
      */
-    public static void TCPServer(String serverIP, int port) throws Exception {
+    public static void TCPClient(String serverIP, int port) throws Exception {
         Socket s = null;
 
         try {
@@ -61,6 +61,8 @@ public class Client {
 
             // Determines IP Address of the server given a hostname or IP
             InetAddress host = InetAddress.getByName(serverIP);
+
+            // Package into DatagramPacket and send to server
             DatagramPacket request = new DatagramPacket(byteStr, byteStr.length, host, port);
             s.send(request);
 
@@ -90,7 +92,7 @@ public class Client {
      * If provided input is not '1' or '2', function will rerun until appropriate input is given.
      * @param scanner The Scanner used for taking user input from System.in.
      */
-    public static void askForCommType(Scanner scanner) {
+    public static void askForCommType(Scanner scanner, String serverIP, int port) {
         System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
         int selection = scanner.nextInt();
 
@@ -102,7 +104,7 @@ public class Client {
             System.out.println("UDP");
         } else { // Rerun if input doesn't match '1' or '2'
             System.out.println("Invalid Input");
-            askForCommType(scanner);
+            askForCommType(scanner, serverIP, port);
         }
     }
 
@@ -125,7 +127,7 @@ public class Client {
 
         // Create scanner for accepting user input
         Scanner scanner = new Scanner(System.in);
-        askForCommType(scanner);
+        askForCommType(scanner, serverIP, port);
 
     }
 }
