@@ -3,6 +3,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Server {
@@ -13,6 +14,9 @@ public class Server {
      * @param port The port the server will listen on.
      */
     public static void TCPServer(String serverIP, int port) {
+        // TODO: move this to main later
+        // TODO: generalize hashmap operations in homogeneous functions
+        HashMap<String, String> hMap = new HashMap<>(); // used to store everything
 
         try {
             while(true) { // Server listens until ctrl-c is pressed or exception occurs
@@ -31,6 +35,21 @@ public class Server {
 
                 try {
                     // Add functionality for operations here
+                    // listen for type of operation: PUT, GET, DELETE
+                    String operation = in.readUTF();
+                    if(operation.equals("GET")){
+                        // invoke homogeneous GET function
+
+                    } else if(operation.equals("PUT")) {
+                        // Invoke homogeneous PUT function
+
+                    } else if(operation.equals("DELETE")) {
+                        // Invoke homogeneous DELETE function
+
+                    } else {
+                        // Faulty operation provided, send back error message
+                        // TODO: figure out error message here
+                    }
 
                 } catch (Exception e) {
                     System.out.println("Error handling client request: " + e.getMessage());
@@ -84,8 +103,9 @@ public class Server {
         int selection = scanner.nextInt();
 
         if(selection == 1) {
-            //TCPServer(serverIP, port);
             System.out.println("TCP");
+            TCPServer(serverIP, port);
+
         } else if(selection == 2) {
             //UDPServer(serverIp, port);
             System.out.println("UDP");
