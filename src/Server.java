@@ -22,9 +22,7 @@ public class Server {
             ServerSocket listenSocket = new ServerSocket(port, 50, ip);
             System.out.println("Server listening on IP " + ip + " port " + port);
 
-
             while(true) { // Server listens until ctrl-c is pressed or exception occurs
-
                 // Look for and accept single incoming connection
                 Socket clientSocket = listenSocket.accept();
                 System.out.println("Connection accepted on port " + port);
@@ -36,7 +34,6 @@ public class Server {
                     // Add functionality for operations here
                     // listen for type of operation: PUT, GET, DELETE
                     String operation = in.readUTF();
-
 
                     if(operation.equals("PUT")){
                         // confirm to server that PUT operation is commencing
@@ -88,7 +85,6 @@ public class Server {
                             out.writeUTF("Key " + key +  " cannot be found in server");
                         }
 
-
                     } else {
                         // Faulty operation provided, send back error message
                         // TODO: figure out error message here
@@ -118,7 +114,7 @@ public class Server {
      * @param serverIP The IP Address or hostname the server will be hosted on.
      * @param port The port number the server will listen on.
      */
-    public static void UDPServer(String serverIP, int port) {
+    public static void UDPServer(String serverIP, int port, HashMap<String, String> hMap) {
         DatagramSocket s = null;
         try {
             // Create new socket at provided port
@@ -156,8 +152,9 @@ public class Server {
             TCPServer(serverIP, port, hMap);
 
         } else if(selection == 2) {
-            //UDPServer(serverIp, port);
             System.out.println("UDP");
+            UDPServer(serverIP, port, hMap);
+
         } else { // Rerun if input doesn't match '1' or '2'
             System.out.println("Invalid Input");
             askForCommType(scanner, serverIP, port, hMap);

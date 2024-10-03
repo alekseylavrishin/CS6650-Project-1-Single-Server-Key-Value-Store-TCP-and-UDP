@@ -77,7 +77,15 @@ public class Client {
     }
 
 
-
+    /**
+     * Handles the client-side execution of a TCP DELETE operation.
+     * If object exists in server's HashMap, server deletes object associated with the key and returns acknowledgement.
+     * If object does not exist, server returns a 'cannot be found' message.
+     * @param key The Key of the object to be deleted on the server.
+     * @param in The datastream used to receive messages from the server.
+     * @param out The datastream used to send messages to the server.
+     * @throws IOException
+     */
     public static void TCPdelete(String key, DataInputStream in, DataOutputStream out) throws IOException {
         // Tell server a DELETE operation is commencing
         out.writeUTF("DELETE");
@@ -94,6 +102,15 @@ public class Client {
         System.out.println("RESPONSE: " + data);
     }
 
+    /**
+     * Handles the client-side execution of a TCP GET operation.
+     * If object exists in server's HashMap, server returns the value associated with the key.
+     * If object does not exist, server returns a 'cannot be found' message.
+     * @param key The Key of the object to be retrieved from the server.
+     * @param in The datastream used to receive messages from the server.
+     * @param out The datastream used to send messages to the server.
+     * @throws IOException
+     */
     public static void TCPget(String key, DataInputStream in, DataOutputStream out) throws IOException {
         // Tell server a GET operation is commencing, then print confirmation response from server
         out.writeUTF("GET");
@@ -109,6 +126,14 @@ public class Client {
         System.out.println("RESPONSE: " + data);
     }
 
+    /**
+     * Handles the client-side execution of a TCP PUT operation.
+     * @param key The Key of the object to be saved in the server's HashMap.
+     * @param value The Value associated with the Key to be saved in the server's HashMap.
+     * @param in The datastream used to receive messages from the server.
+     * @param out The datastream used to send messages to the server.
+     * @throws IOException
+     */
     public static void TCPput(String key, String value, DataInputStream in, DataOutputStream out) throws IOException {
 
         // Tell server a PUT operation is commencing, then receive confirmation response from server
@@ -190,8 +215,9 @@ public class Client {
             TCPClient(serverIP, port);
 
         } else if(selection == 2) {
-            //UDPServer(serverIp, port);
-            System.out.println("UDP");
+            System.out.println("UDP Communication Selected");
+            UDPClient(serverIP, port);
+
         } else { // Rerun if input doesn't match '1' or '2'
             System.out.println("Invalid Input");
             askForCommType(scanner, serverIP, port);
