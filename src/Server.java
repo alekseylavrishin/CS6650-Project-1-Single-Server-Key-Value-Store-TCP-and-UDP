@@ -8,8 +8,8 @@ import java.util.Scanner;
 public class Server {
 
     /**
-     * Used to communicate with TCP client
-     * @param serverIP The IP or hostname the server will be hosted on.
+     * Used to communicate with TCP Client
+     * @param serverIP The IP Address or hostname the server will be hosted on.
      * @param port The port the server will listen on.
      */
     public static void TCPServer(String serverIP, int port) {
@@ -47,6 +47,11 @@ public class Server {
 
     }
 
+    /**
+     * Used to communicate with UDP Client.
+     * @param serverIP The IP Address or hostname the server will be hosted on.
+     * @param port The port number the server will listen on.
+     */
     public static void UDPServer(String serverIP, int port) {
         DatagramSocket s = null;
         try {

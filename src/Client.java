@@ -23,17 +23,47 @@ public class Client {
             DataInputStream in = new DataInputStream(s.getInputStream());
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
 
-            // Get user input
             Scanner scanner = new Scanner(System.in);
-            System.out.print("Enter text: ");
-            String line = scanner.nextLine();
 
-            // Send user input to server
-            out.writeUTF(line);
 
-            // Read and print message returned from server
-            String data = in.readUTF();
-            System.out.print("Response from the server: " + data);
+            // Choose type of operation
+            System.out.println("Enter '1' to perform PUT");
+            System.out.println("Enter '2' to perform GET");
+            System.out.println("Enter '3' to perform DELETE");
+
+            int selection = scanner.nextInt();
+
+
+            if(selection == 1) {
+                System.out.println("PUT operation selected");
+                System.out.print("Enter key to PUT: ");
+                String key = scanner.nextLine();
+                System.out.print("Enter value to PUT: ");
+                String value = scanner.nextLine();
+
+                TCPput(key, value, in, out);
+
+            } else if(selection == 2) {
+
+                System.out.println("GET operation selected");
+
+                System.out.print("Enter key to GET: ");
+                String key = scanner.nextLine();
+
+                TCPget(key, in, out);
+
+            } else if(selection == 3) {
+                System.out.println("DELETE operation selected");
+                System.out.print("Enter key to DELETE: ");
+                String key = scanner.nextLine();
+
+                TCPdelete(key, in, out);
+
+            } else { // Rerun if input doesn't match '1', '2', or '3'
+                System.out.println("Invalid Input");
+                TCPClient(serverIP, port);
+
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -43,6 +73,53 @@ public class Client {
                 s.close();
             }
         }
+    }
+
+
+
+    public static void TCPdelete(String key, DataInputStream in, DataOutputStream out) throws IOException {
+        // Tell server a DELETE operation is commencing
+        out.writeUTF("DELETE");
+        String data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+
+        // Write key and get response from server
+        out.writeUTF(key);
+        data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+    }
+
+    public static void TCPget(String key, DataInputStream in, DataOutputStream out) throws IOException {
+        // Tell server a GET operation is commencing, then print confirmation response from server
+        out.writeUTF("GET");
+        String data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+
+        // Get value from server
+        out.writeUTF(key);
+        data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+    }
+
+    public static void TCPput(String key, String value, DataInputStream in, DataOutputStream out) throws IOException {
+
+        // Tell server a PUT operation is commencing, then receive confirmation response from server
+        out.writeUTF("PUT");
+        String data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+
+        // Then write key to server and receive confirmation response
+        out.writeUTF(key);
+        data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+
+        // Lastly, write value to server and receive confirmation back
+        out.writeUTF(value);
+        data = in.readUTF();
+        System.out.print("Response from the server: " + data);
+
+
+
     }
 
     /**
