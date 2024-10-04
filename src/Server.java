@@ -9,9 +9,10 @@ import java.util.Scanner;
 public class Server {
 
     /**
-     * Used to communicate with TCP Client
+     * Used to communicate with TCPClient to perform PUT, GET, DELETE operations over TCP protocol.
      * @param serverIP The IP Address or hostname the server will be hosted on.
      * @param port The port the server will listen on.
+     * @param hMap The HashMap used to store and perform operations on Key, Value pairs specified by the TCPClient.
      */
     public static void TCPServer(String serverIP, int port, HashMap<String, String> hMap) {
 
@@ -31,7 +32,6 @@ public class Server {
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 
                 try {
-                    // Add functionality for operations here
                     // listen for type of operation: PUT, GET, DELETE
                     String operation = in.readUTF();
 
@@ -111,9 +111,10 @@ public class Server {
     }
 
     /**
-     * Used to communicate with UDP Client.
+     * Used to communicate with UDPClient to perform PUT, GET, DELETE operations over UDP protocol.
      * @param serverIP The IP Address or hostname the server will be hosted on.
-     * @param port The port number the server will listen on.
+     * @param port The port the server will listen on.
+     * @param hMap The HashMap used to store and perform operations on Key, Value pairs specified by the UDPClient.
      */
     public static void UDPServer(String serverIP, int port, HashMap<String, String> hMap) {
         DatagramSocket s = null;
