@@ -135,6 +135,7 @@ public class Client {
                 logMessage("PUT operation selected");
                 logMessage("Enter key to PUT: ");
                 String key = scanner.nextLine();
+                logMessage("Enter value to PUT: ");
                 String value = scanner.nextLine();
 
                 UDPOperation(key, value, "PUT", host, port, s);
