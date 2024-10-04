@@ -165,6 +165,7 @@ public class Client {
         String testString = "Test string";
         try {
             s = new DatagramSocket();
+            s.setSoTimeout(5000); // Set timeout to 5 seconds
 
             // Encode string into bytes for transmission
             byte[] byteStr = testString.getBytes();

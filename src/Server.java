@@ -1,4 +1,3 @@
-import javax.xml.crypto.Data;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -123,8 +122,16 @@ public class Server {
             while(true) { // Server listens until ctrl-c is pressed or exception occurs
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 s.receive(request);
-                DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(),
+
+
+                String msg = new String(request.getData(), request.getOffset(), request.getLength());
+                msg = msg + " REPLY";
+
+                DatagramPacket reply = new DatagramPacket(msg.getBytes(), request.getLength(),
                         request.getAddress(), request.getPort());
+
+                /*DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(),
+                        request.getAddress(), request.getPort());*/
                 s.send(reply);
             }
 
