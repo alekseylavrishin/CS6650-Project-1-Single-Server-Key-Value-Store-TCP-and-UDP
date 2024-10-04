@@ -34,7 +34,6 @@ public class Client {
             int selection = scanner.nextInt();
             scanner.nextLine(); // deal with \n left by scanner.nextInt()
 
-
             if(selection == 1) {
                 System.out.println("PUT operation selected");
                 System.out.print("Enter key to PUT: ");
@@ -42,7 +41,6 @@ public class Client {
                 System.out.print("Enter value to PUT: ");
                 String value = scanner.nextLine();
 
-                //TCPput(key, value, in, out);
                 TCPOperation(key, value, "PUT", in, out);
 
             } else if(selection == 2) {
@@ -67,9 +65,7 @@ public class Client {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-        }
-
-        finally {
+        } finally {
             if(s != null && !s.isClosed()) {
                 s.close();
             }
@@ -108,7 +104,6 @@ public class Client {
         System.out.println("RESPONSE: " + data);
 
     }
-
 
     /**
      * Performs communication with the server over UDP.
