@@ -53,7 +53,6 @@ public class Client {
                 TCPOperation(key, "", "GET", in, out);
 
             } else if(selection == 3) {
-                //System.out.println("DELETE operation selected");
                 logMessage("DELETE operation selected");
                 logMessage("Enter key to DELETE: ");
                 String key = scanner.nextLine();
@@ -242,8 +241,8 @@ public class Client {
     }
 
     /**
-     *
-     * @param message
+     * Gets current system time and prints Client output in MM-dd-yyyy HH:mm:ss.SSS format.
+     * @param message The message to be printed.
      */
     public static void logMessage(String message) {
         long currSystemTime = System.currentTimeMillis(); // Get current system time
