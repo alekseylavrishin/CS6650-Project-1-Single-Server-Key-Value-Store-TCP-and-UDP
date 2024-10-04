@@ -42,23 +42,23 @@ public class Client {
                 System.out.print("Enter value to PUT: ");
                 String value = scanner.nextLine();
 
-                TCPput(key, value, in, out);
+                //TCPput(key, value, in, out);
+                TCPOperation(key, value, "PUT", in, out);
 
             } else if(selection == 2) {
-
                 System.out.println("GET operation selected");
 
                 System.out.print("Enter key to GET: ");
                 String key = scanner.nextLine();
 
-                TCPget(key, in, out);
+                TCPOperation(key, "", "GET", in, out);
 
             } else if(selection == 3) {
                 System.out.println("DELETE operation selected");
                 System.out.print("Enter key to DELETE: ");
                 String key = scanner.nextLine();
 
-                TCPdelete(key, in, out);
+                TCPOperation(key, "", "DELETE", in, out);
 
             } else { // Rerun if input doesn't match '1', '2', or '3'
                 System.out.println("Invalid Input");
@@ -77,17 +77,17 @@ public class Client {
     }
 
     /**
-     * Handles the client-side execution of a TCP DELETE operation.
-     * If object exists in server's HashMap, server deletes object associated with the key and returns acknowledgement.
-     * If object does not exist, server returns a 'cannot be found' message.
-     * @param key The Key of the object to be deleted on the server.
-     * @param in The datastream used to receive messages from the server.
-     * @param out The datastream used to send messages to the server.
+     * Handles client-side PUT, GET, DELETE operations for TCP communication.
+     * @param key The Key of the object to perform an operation on.
+     * @param value The Value of the object to perform an operation on.
+     * @param type The type of operation to be performed - PUT, GET, DELETE.
+     * @param in The DataInputStream used to receive messages from the server.
+     * @param out The DataOutputStream used to send messages to the server.
      * @throws IOException
      */
-    public static void TCPdelete(String key, DataInputStream in, DataOutputStream out) throws IOException {
-        // Tell server a DELETE operation is commencing
-        out.writeUTF("DELETE");
+    public static void TCPOperation(String key, String value, String type, DataInputStream in, DataOutputStream out) throws IOException {
+        // Inform server of incoming request type
+        out.writeUTF(type);
         String data = in.readUTF();
         System.out.println("RESPONSE: " + data);
 
@@ -96,65 +96,19 @@ public class Client {
         data = in.readUTF();
         System.out.println("RESPONSE: " + data);
 
-        // Receive confirmation of deletion
-        data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-    }
+        if(type.equals("PUT")) {
+            // Write value to server and receive confirmation that value is received
+            out.writeUTF(value);
+            data = in.readUTF();
+            System.out.println("RESPONSE: " + data);
+        }
 
-    /**
-     * Handles the client-side execution of a TCP GET operation.
-     * If object exists in server's HashMap, server returns the value associated with the key.
-     * If object does not exist, server returns a 'cannot be found' message.
-     * @param key The Key of the object to be retrieved from the server.
-     * @param in The datastream used to receive messages from the server.
-     * @param out The datastream used to send messages to the server.
-     * @throws IOException
-     */
-    public static void TCPget(String key, DataInputStream in, DataOutputStream out) throws IOException {
-        // Tell server a GET operation is commencing, then print confirmation response from server
-        out.writeUTF("GET");
-        String data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-
-        // Get value from server
-        out.writeUTF(key);
-        data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-
-        data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-    }
-
-    /**
-     * Handles the client-side execution of a TCP PUT operation.
-     * @param key The Key of the object to be saved in the server's HashMap.
-     * @param value The Value associated with the Key to be saved in the server's HashMap.
-     * @param in The datastream used to receive messages from the server.
-     * @param out The datastream used to send messages to the server.
-     * @throws IOException
-     */
-    public static void TCPput(String key, String value, DataInputStream in, DataOutputStream out) throws IOException {
-
-        // Tell server a PUT operation is commencing, then receive confirmation response from server
-        out.writeUTF("PUT");
-        String data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-
-        // Then write key to server and receive confirmation that key is received
-        out.writeUTF(key);
-        data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-
-        // Write value to server and receive confirmation that value is received
-        out.writeUTF(value);
-        data = in.readUTF();
-        System.out.println("RESPONSE: " + data);
-
-        // Receive confirmation that key, value pair has been created
+        // Receive status of operation from server
         data = in.readUTF();
         System.out.println("RESPONSE: " + data);
 
     }
+
 
     /**
      * Performs communication with the server over UDP.
