@@ -162,20 +162,67 @@ public class Client {
      */
     public static void UDPClient(String serverIP, int port){
         DatagramSocket s = null;
-        String testString = "Test string";
+        //String testString = "Test string";
         try {
             s = new DatagramSocket();
-            s.setSoTimeout(5000); // Set timeout to 5 seconds
+            s.setSoTimeout(10000); // Set timeout to 10 seconds
 
             // Encode string into bytes for transmission
-            byte[] byteStr = testString.getBytes();
+            //byte[] byteStr = testString.getBytes();
 
             // Determines IP Address of the server given a hostname or IP
             InetAddress host = InetAddress.getByName(serverIP);
 
+
+            Scanner scanner = new Scanner(System.in);
+
+            // Choose type of operation
+            System.out.println("Enter '1' to perform PUT");
+            System.out.println("Enter '2' to perform GET");
+            System.out.println("Enter '3' to perform DELETE");
+
+            int selection = scanner.nextInt();
+            scanner.nextLine(); // deal with \n left by scanner.nextInt()
+
+
+            if(selection == 1) {
+                System.out.println("PUT operation selected");
+                System.out.print("Enter key to PUT: ");
+                String key = scanner.nextLine();
+                System.out.print("Enter value to PUT: ");
+                String value = scanner.nextLine();
+
+                UDPput(key, value, host, port, s);
+
+            } else if(selection == 2) {
+
+                System.out.println("GET operation selected");
+
+                System.out.print("Enter key to GET: ");
+                String key = scanner.nextLine();
+
+                UDPget(key);
+
+            } else if(selection == 3) {
+                System.out.println("DELETE operation selected");
+                System.out.print("Enter key to DELETE: ");
+                String key = scanner.nextLine();
+
+                UDPdelete(key);
+
+            } else { // Rerun if input doesn't match '1', '2', or '3'
+                System.out.println("Invalid Input");
+                UDPClient(serverIP, port);
+
+            }
+
+
+
+
+
             // Package into DatagramPacket and send to server
-            DatagramPacket request = new DatagramPacket(byteStr, byteStr.length, host, port);
-            s.send(request);
+            /*DatagramPacket request = new DatagramPacket(byteStr, byteStr.length, host, port);
+            s.send(request);*/
 
             byte[] buffer = new byte[1000]; // Buffer used to hold incoming datagram
             DatagramPacket reply = new DatagramPacket(buffer, buffer.length); // Receive response
@@ -185,16 +232,50 @@ public class Client {
             System.out.println("Reply: " + new String(reply.getData()));
 
         } catch (SocketException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println(e.getMessage());
         } finally {
             if(s != null) {
                 s.close();
             }
         }
+    }
+
+    public static void UDPget(String key) {
+
+    }
+
+    public static void UDPput(String key, String value, InetAddress host, int port, DatagramSocket s) throws IOException {
+        byte[] byteKey = key.getBytes();
+        byte[] byteVal = value.getBytes();
+        byte[] byteType = "PUT".getBytes(); // Type of request
+
+        // Inform server of incoming PUT request
+        DatagramPacket typeRequest = new DatagramPacket(byteType, byteType.length, host, port);
+        s.send(typeRequest); // Send PUT request to server
+
+        // Package Key into Datagram packet and send to server
+        DatagramPacket keyRequest = new DatagramPacket(byteKey, byteKey.length, host, port);
+        s.send(keyRequest);
+        // Package Value into Datagram packet and send to server
+        DatagramPacket valRequest = new DatagramPacket(byteVal, byteVal.length, host, port);
+        s.send(valRequest);
+
+        // Receive response from server and print
+        byte[] buffer = new byte[1024];
+        DatagramPacket response = new DatagramPacket(buffer, buffer.length);
+        s.receive(response);
+        String responseMsg = new String(response.getData(), 0, response.getLength());
+        System.out.println("Reply: " + responseMsg);
+        s.close();
+
+    }
+
+    public static void UDPdelete(String key) {
+
     }
 
     /**

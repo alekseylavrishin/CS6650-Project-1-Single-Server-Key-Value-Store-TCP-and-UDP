@@ -118,11 +118,38 @@ public class Server {
         try {
             // Create new socket at provided port
             s = new DatagramSocket(port);
-            byte[] buffer = new byte[1000];
+            byte[] buffer = new byte[1024];
             while(true) { // Server listens until ctrl-c is pressed or exception occurs
-                DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-                s.receive(request);
 
+                // Get type of incoming request from client
+                DatagramPacket typePacket = new DatagramPacket(buffer, buffer.length);
+                s.receive(typePacket); // Get type of request
+                String typeMsg = new String(typePacket.getData(), 0, typePacket.getLength());
+                System.out.println("1 " + typeMsg);
+
+                if(typeMsg.equals("PUT")) {
+                    // Get key from client
+                    DatagramPacket keyPacket = new DatagramPacket(buffer, buffer.length);
+                    s.receive(keyPacket); // Get type of request
+                    String keyMsg = new String(keyPacket.getData(), 0, keyPacket.getLength());
+                    System.out.println("2" + keyMsg);
+
+                    DatagramPacket valPacket = new DatagramPacket(buffer, buffer.length);
+                    s.receive(valPacket); // Get type of request
+                    String valMsg = new String(valPacket.getData(), 0, valPacket.getLength());
+                    System.out.println("3 " + valMsg);
+
+                    hMap.put(keyMsg, valMsg);
+
+                    byte[] byteResponse = ("Entry for " + keyMsg + " successfully created").getBytes();
+                    DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
+                            typePacket.getAddress(), typePacket.getPort());
+                    s.send(response);
+                }
+
+
+               /* DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+                s.receive(request); // Get type of request
 
                 String msg = new String(request.getData(), request.getOffset(), request.getLength());
                 msg = msg + " REPLY";
@@ -130,9 +157,9 @@ public class Server {
                 DatagramPacket reply = new DatagramPacket(msg.getBytes(), request.getLength(),
                         request.getAddress(), request.getPort());
 
-                /*DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(),
-                        request.getAddress(), request.getPort());*/
-                s.send(reply);
+                *//*DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(),
+                        request.getAddress(), request.getPort());*//*
+                s.send(reply);*/
             }
 
         } catch (SocketException e) {
@@ -155,11 +182,11 @@ public class Server {
         int selection = scanner.nextInt();
 
         if(selection == 1) {
-            System.out.println("TCP");
+            System.out.println("TCP Communication Selected");
             TCPServer(serverIP, port, hMap);
 
         } else if(selection == 2) {
-            System.out.println("UDP");
+            System.out.println("UDP Communication Selected");
             UDPServer(serverIP, port, hMap);
 
         } else { // Rerun if input doesn't match '1' or '2'
