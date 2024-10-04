@@ -3,6 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Server {
@@ -87,6 +88,7 @@ public class Server {
                     } else {
                         // Faulty operation provided, send back error message
                         // TODO: figure out error message here
+                        out.writeUTF("Faulty operation detected");
                     }
 
                 } catch (Exception e) {
@@ -116,8 +118,15 @@ public class Server {
     public static void UDPServer(String serverIP, int port, HashMap<String, String> hMap) {
         DatagramSocket s = null;
         try {
-            // Create new socket at provided port
-            s = new DatagramSocket(port);
+            String val;
+            byte[] byteResponse;
+
+            // Translate String IP or hostname to InetAddress type
+            InetAddress ip = InetAddress.getByName(serverIP);
+
+            // Create new socket at provided port and InetAddress
+            s = new DatagramSocket(port, ip);
+
             byte[] buffer = new byte[1024];
             while(true) { // Server listens until ctrl-c is pressed or exception occurs
 
@@ -127,13 +136,15 @@ public class Server {
                 String typeMsg = new String(typePacket.getData(), 0, typePacket.getLength());
                 System.out.println("1 " + typeMsg);
 
-                if(typeMsg.equals("PUT")) {
-                    // Get key from client
-                    DatagramPacket keyPacket = new DatagramPacket(buffer, buffer.length);
-                    s.receive(keyPacket); // Get type of request
-                    String keyMsg = new String(keyPacket.getData(), 0, keyPacket.getLength());
-                    System.out.println("2" + keyMsg);
+                // Get key from client
+                DatagramPacket keyPacket = new DatagramPacket(buffer, buffer.length);
+                s.receive(keyPacket); // Get type of request
+                String keyMsg = new String(keyPacket.getData(), 0, keyPacket.getLength());
+                System.out.println("2" + keyMsg);
 
+
+                if(typeMsg.equals("PUT")) {
+                    // If operation is PUT, retrieve value
                     DatagramPacket valPacket = new DatagramPacket(buffer, buffer.length);
                     s.receive(valPacket); // Get type of request
                     String valMsg = new String(valPacket.getData(), 0, valPacket.getLength());
@@ -141,25 +152,44 @@ public class Server {
 
                     hMap.put(keyMsg, valMsg);
 
-                    byte[] byteResponse = ("Entry for " + keyMsg + " successfully created").getBytes();
+                    byteResponse = ("Entry for " + keyMsg + " successfully created").getBytes();
+                    DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
+                            typePacket.getAddress(), typePacket.getPort());
+                    s.send(response);
+
+                } else if (typeMsg.equals("GET")) {
+                    if(hMap.containsKey(keyMsg)) { // if key exists, return value
+                        val = hMap.get(keyMsg);
+                    } else { // Else return 'cannot be found' message
+                        val = ("Key " + keyMsg + " cannot be found in server");
+                    }
+                    byteResponse = val.getBytes();
+                    DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
+                            typePacket.getAddress(), typePacket.getPort());
+                    s.send(response);
+
+                } else if(typeMsg.equals("DELETE")) {
+                    if(hMap.containsKey(keyMsg)) { // if key exists, return value
+                        hMap.remove(keyMsg);
+                        val = "Key " + keyMsg + " deleted from server";
+
+                    } else { // Else return 'cannot be found' message
+                        val = ("Key " + keyMsg + " cannot be found in server");
+
+                    }
+                    byteResponse = val.getBytes();
+                    DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
+                            typePacket.getAddress(), typePacket.getPort());
+                    s.send(response);
+
+                } else {
+                    // Faulty operation provided
+                    // TODO: send error message
+                    byteResponse = "Faulty operation detected".getBytes();
                     DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
                             typePacket.getAddress(), typePacket.getPort());
                     s.send(response);
                 }
-
-
-               /* DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-                s.receive(request); // Get type of request
-
-                String msg = new String(request.getData(), request.getOffset(), request.getLength());
-                msg = msg + " REPLY";
-
-                DatagramPacket reply = new DatagramPacket(msg.getBytes(), request.getLength(),
-                        request.getAddress(), request.getPort());
-
-                *//*DatagramPacket reply = new DatagramPacket(request.getData(), request.getLength(),
-                        request.getAddress(), request.getPort());*//*
-                s.send(reply);*/
             }
 
         } catch (SocketException e) {
@@ -178,20 +208,24 @@ public class Server {
      * @param scanner The Scanner used for taking user input from System.in.
      */
     public static void askForCommType(Scanner scanner, String serverIP, int port, HashMap<String,String> hMap) {
-        System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
-        int selection = scanner.nextInt();
+        try {
+            System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
+            int selection = scanner.nextInt();
 
-        if(selection == 1) {
-            System.out.println("TCP Communication Selected");
-            TCPServer(serverIP, port, hMap);
+            if (selection == 1) {
+                System.out.println("TCP Communication Selected");
+                TCPServer(serverIP, port, hMap);
 
-        } else if(selection == 2) {
-            System.out.println("UDP Communication Selected");
-            UDPServer(serverIP, port, hMap);
+            } else if (selection == 2) {
+                System.out.println("UDP Communication Selected");
+                UDPServer(serverIP, port, hMap);
 
-        } else { // Rerun if input doesn't match '1' or '2'
-            System.out.println("Invalid Input");
-            askForCommType(scanner, serverIP, port, hMap);
+            } else { // Rerun if input doesn't match '1' or '2'
+                System.out.println("Invalid Input");
+                askForCommType(scanner, serverIP, port, hMap);
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Input mismatch detected: exiting");
         }
     }
 

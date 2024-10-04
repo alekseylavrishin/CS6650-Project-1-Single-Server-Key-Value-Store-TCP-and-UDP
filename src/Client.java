@@ -2,6 +2,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Client {
@@ -162,17 +163,13 @@ public class Client {
      */
     public static void UDPClient(String serverIP, int port){
         DatagramSocket s = null;
-        //String testString = "Test string";
+
         try {
             s = new DatagramSocket();
             s.setSoTimeout(10000); // Set timeout to 10 seconds
 
-            // Encode string into bytes for transmission
-            //byte[] byteStr = testString.getBytes();
-
             // Determines IP Address of the server given a hostname or IP
             InetAddress host = InetAddress.getByName(serverIP);
-
 
             Scanner scanner = new Scanner(System.in);
 
@@ -184,52 +181,34 @@ public class Client {
             int selection = scanner.nextInt();
             scanner.nextLine(); // deal with \n left by scanner.nextInt()
 
-
-            if(selection == 1) {
+            if(selection == 1) { // PUT operation
                 System.out.println("PUT operation selected");
                 System.out.print("Enter key to PUT: ");
                 String key = scanner.nextLine();
                 System.out.print("Enter value to PUT: ");
                 String value = scanner.nextLine();
 
-                UDPput(key, value, host, port, s);
+                UDPOperation(key, value, "PUT", host, port, s);
 
-            } else if(selection == 2) {
-
+            } else if(selection == 2) { // GET operation
                 System.out.println("GET operation selected");
-
                 System.out.print("Enter key to GET: ");
                 String key = scanner.nextLine();
 
-                UDPget(key);
+                UDPOperation(key, "", "GET", host, port, s);
 
-            } else if(selection == 3) {
+            } else if(selection == 3) { // DELETE operation
                 System.out.println("DELETE operation selected");
                 System.out.print("Enter key to DELETE: ");
                 String key = scanner.nextLine();
 
-                UDPdelete(key);
+                UDPOperation(key, "", "DELETE", host, port, s);
 
             } else { // Rerun if input doesn't match '1', '2', or '3'
                 System.out.println("Invalid Input");
                 UDPClient(serverIP, port);
 
             }
-
-
-
-
-
-            // Package into DatagramPacket and send to server
-            /*DatagramPacket request = new DatagramPacket(byteStr, byteStr.length, host, port);
-            s.send(request);*/
-
-            byte[] buffer = new byte[1000]; // Buffer used to hold incoming datagram
-            DatagramPacket reply = new DatagramPacket(buffer, buffer.length); // Receive response
-
-            // Test connection to server by sending message and receiving a reply
-            s.receive(reply);
-            System.out.println("Reply: " + new String(reply.getData()));
 
         } catch (SocketException e) {
             System.out.println(e.getMessage());
@@ -244,25 +223,34 @@ public class Client {
         }
     }
 
-    public static void UDPget(String key) {
-
-    }
-
-    public static void UDPput(String key, String value, InetAddress host, int port, DatagramSocket s) throws IOException {
+    /**
+     * Handles client-side PUT, GET, DELETE operations for UDP communication.
+     * @param key The Key of the object to perform an operation on.
+     * @param value The Value of the object to perform an operation on.
+     * @param type The type of operation to be performed - PUT, GET, DELETE.
+     * @param host The InetAddress corresponding to the server.
+     * @param port The port the server is listening on.
+     * @param s The DatagramSocket used to communicate with the server.
+     * @throws IOException
+     */
+    public static void UDPOperation(String key, String value, String type, InetAddress host, int port, DatagramSocket s) throws IOException {
         byte[] byteKey = key.getBytes();
         byte[] byteVal = value.getBytes();
-        byte[] byteType = "PUT".getBytes(); // Type of request
+        byte[] byteType = type.getBytes(); // Type of request
 
-        // Inform server of incoming PUT request
+        // Inform server of incoming request type
         DatagramPacket typeRequest = new DatagramPacket(byteType, byteType.length, host, port);
-        s.send(typeRequest); // Send PUT request to server
+        s.send(typeRequest); // Send request to server
 
         // Package Key into Datagram packet and send to server
         DatagramPacket keyRequest = new DatagramPacket(byteKey, byteKey.length, host, port);
         s.send(keyRequest);
-        // Package Value into Datagram packet and send to server
-        DatagramPacket valRequest = new DatagramPacket(byteVal, byteVal.length, host, port);
-        s.send(valRequest);
+
+        if(type.equals("PUT")){
+            // Package Value into Datagram packet and send to server
+            DatagramPacket valRequest = new DatagramPacket(byteVal, byteVal.length, host, port);
+            s.send(valRequest);
+        }
 
         // Receive response from server and print
         byte[] buffer = new byte[1024];
@@ -270,11 +258,8 @@ public class Client {
         s.receive(response);
         String responseMsg = new String(response.getData(), 0, response.getLength());
         System.out.println("Reply: " + responseMsg);
-        s.close();
 
-    }
-
-    public static void UDPdelete(String key) {
+        s.close(); // Close socket
 
     }
 
@@ -285,20 +270,24 @@ public class Client {
      * @param scanner The Scanner used for taking user input from System.in.
      */
     public static void askForCommType(Scanner scanner, String serverIP, int port) throws Exception {
-        System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
-        int selection = scanner.nextInt();
+        try {
+            System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
+            int selection = scanner.nextInt();
 
-        if(selection == 1) {
-            System.out.println("TCP Communication Selected");
-            TCPClient(serverIP, port);
+            if (selection == 1) {
+                System.out.println("TCP Communication Selected");
+                TCPClient(serverIP, port);
 
-        } else if(selection == 2) {
-            System.out.println("UDP Communication Selected");
-            UDPClient(serverIP, port);
+            } else if (selection == 2) {
+                System.out.println("UDP Communication Selected");
+                UDPClient(serverIP, port);
 
-        } else { // Rerun if input doesn't match '1' or '2'
-            System.out.println("Invalid Input");
-            askForCommType(scanner, serverIP, port);
+            } else { // Rerun if input doesn't match '1' or '2'
+                System.out.println("Invalid Input");
+                askForCommType(scanner, serverIP, port);
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Input mismatch detected: exiting");
         }
     }
 
