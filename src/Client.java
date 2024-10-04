@@ -39,11 +39,8 @@ public class Client {
             if(selection == 1) {
                 logMessage("PUT operation selected");
                 logMessage("Enter key to PUT: ");
-                /*System.out.println("PUT operation selected");
-                System.out.print("Enter key to PUT: ");*/
                 String key = scanner.nextLine();
                 logMessage("Enter value to PUT: ");
-                //System.out.print("Enter value to PUT: ");
                 String value = scanner.nextLine();
 
                 TCPOperation(key, value, "PUT", in, out);
@@ -51,8 +48,6 @@ public class Client {
             } else if(selection == 2) {
                 logMessage("GET operation selected");
                 logMessage("Enter key to GET: ");
-                /*System.out.println("GET operation selected");
-                System.out.print("Enter key to GET: ");*/
                 String key = scanner.nextLine();
 
                 TCPOperation(key, "", "GET", in, out);
@@ -61,19 +56,16 @@ public class Client {
                 //System.out.println("DELETE operation selected");
                 logMessage("DELETE operation selected");
                 logMessage("Enter key to DELETE: ");
-                //System.out.print("Enter key to DELETE: ");
                 String key = scanner.nextLine();
 
                 TCPOperation(key, "", "DELETE", in, out);
 
             } else { // Rerun if input doesn't match '1', '2', or '3'
-                //System.out.println("Invalid Input");
                 logMessage("ERROR: Invalid Input");
                 TCPClient(serverIP, port);
 
             }
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
             logMessage("ERROR: " + e.getMessage());
         } finally {
             if(s != null && !s.isClosed()) {
@@ -95,27 +87,23 @@ public class Client {
         // Inform server of incoming request type
         out.writeUTF(type);
         String data = in.readUTF();
-        //System.out.println("RESPONSE: " + data);
         logMessage("RESPONSE: " + data);
 
         // Send key and get response from server
         out.writeUTF(key);
         data = in.readUTF();
-        //System.out.println("RESPONSE: " + data);
         logMessage("RESPONSE: " + data);
 
         if(type.equals("PUT")) {
             // Write value to server and receive confirmation that value is received
             out.writeUTF(value);
             data = in.readUTF();
-            //System.out.println("RESPONSE: " + data);
             logMessage("RESPONSE: " + data);
         }
 
         // Receive status of operation from server
         data = in.readUTF();
         logMessage("RESPONSE: " + data);
-        //System.out.println("RESPONSE: " + data);
 
     }
 
@@ -147,10 +135,7 @@ public class Client {
             if(selection == 1) { // PUT operation
                 logMessage("PUT operation selected");
                 logMessage("Enter key to PUT: ");
-                /*System.out.println("PUT operation selected");
-                System.out.print("Enter key to PUT: ");*/
                 String key = scanner.nextLine();
-                //System.out.print("Enter value to PUT: ");
                 String value = scanner.nextLine();
 
                 UDPOperation(key, value, "PUT", host, port, s);
@@ -158,8 +143,6 @@ public class Client {
             } else if(selection == 2) { // GET operation
                 logMessage("GET operation selected");
                 logMessage("Enter key to GET: ");
-                /*System.out.println("GET operation selected");
-                System.out.print("Enter key to GET: ");*/
                 String key = scanner.nextLine();
 
                 UDPOperation(key, "", "GET", host, port, s);
@@ -167,14 +150,11 @@ public class Client {
             } else if(selection == 3) { // DELETE operation
                 logMessage("DELETE operation selected");
                 logMessage("Enter key to DELETE: ");
-                //System.out.println("DELETE operation selected");
-                //System.out.print("Enter key to DELETE: ");
                 String key = scanner.nextLine();
 
                 UDPOperation(key, "", "DELETE", host, port, s);
 
             } else { // Rerun if input doesn't match '1', '2', or '3'
-                //System.out.println("Invalid Input");
                 logMessage("ERROR: Invalid Input");
                 UDPClient(serverIP, port);
 
@@ -182,13 +162,10 @@ public class Client {
 
         } catch (SocketException e) {
             logMessage("ERROR: " + e.getMessage());
-            //System.out.println(e.getMessage());
         } catch (UnknownHostException e) {
             logMessage("ERROR: " + e.getMessage());
-            //System.out.println(e.getMessage());
         } catch (IOException e) {
             logMessage("ERROR: " + e.getMessage());
-            //System.out.println(e.getMessage());
         } finally {
             if(s != null) {
                 s.close();
@@ -230,7 +207,6 @@ public class Client {
         DatagramPacket response = new DatagramPacket(buffer, buffer.length);
         s.receive(response);
         String responseMsg = new String(response.getData(), 0, response.getLength());
-        //System.out.println("Reply: " + responseMsg);
         logMessage("RESPONSE: " + responseMsg);
 
         s.close(); // Close socket
@@ -246,27 +222,22 @@ public class Client {
     public static void askForCommType(Scanner scanner, String serverIP, int port) throws Exception {
         try {
             logMessage("Enter '1' to use TCP or enter '2' to use UDP");
-            //System.out.println("Enter '1' to use TCP or enter '2' to use UDP");
             int selection = scanner.nextInt();
 
             if (selection == 1) {
                 logMessage("TCP Communication Selected");
-                //System.out.println("TCP Communication Selected");
                 TCPClient(serverIP, port);
 
             } else if (selection == 2) {
                 logMessage("UDP Communication Selected");
-                //System.out.println("UDP Communication Selected");
                 UDPClient(serverIP, port);
 
             } else { // Rerun if input doesn't match '1' or '2'
-                //System.out.println("Invalid Input");
                 logMessage("ERROR: Invalid Input");
                 askForCommType(scanner, serverIP, port);
             }
         } catch (InputMismatchException e) {
             logMessage("ERROR: Input mismatch detected: exiting");
-            //System.out.println("Input mismatch detected: exiting");
         }
     }
 
@@ -287,7 +258,6 @@ public class Client {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2){ // Check that 2 args are provided
-            //System.out.println("Proper input format must be 'java Client.java <server_ip> <port>'");
             logMessage("ERROR: Proper input format must be 'java Client.java <server_ip> <port>'");
             return;
         }
@@ -300,7 +270,6 @@ public class Client {
             serverIP = args[0];
             port = Integer.parseInt(args[1]);
         } catch (Exception e) {
-            //System.out.println("<server_ip> must be type String and <port> must be type int");
             logMessage("ERROR: <server_ip> must be type String and <port> must be type int");
         }
 
