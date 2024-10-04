@@ -2,6 +2,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -21,12 +23,12 @@ public class Server {
             InetAddress ip = InetAddress.getByName(serverIP);
 
             ServerSocket listenSocket = new ServerSocket(port, 50, ip);
-            System.out.println("Server listening on IP " + ip + " port " + port);
+            logMessage("Server listening on IP " + ip + " port " + port);
 
             while(true) { // Server listens until ctrl-c is pressed or exception occurs
                 // Look for and accept single incoming connection
                 Socket clientSocket = listenSocket.accept();
-                System.out.println("Connection accepted on port " + port);
+                logMessage("Connection accepted on IP " + ip + " port " + port + " over TCP");
 
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
@@ -35,77 +37,87 @@ public class Server {
                     // listen for type of operation: PUT, GET, DELETE
                     String operation = in.readUTF();
 
+                    logMessage("Received " + operation + " request from " + ip + " port " + port);
+
                     if(operation.equals("PUT")){
                         // confirm to server that PUT operation is commencing
                         out.writeUTF("Server initializing PUT operation");
+                        logMessage("Server initializing PUT operation");
 
                         // Get key from client
                         String key = in.readUTF();
                         out.writeUTF("Key " + key + " received by server");
+                        logMessage(("Key " + key + " received by server"));
 
                         // Get value from client
                         String value = in.readUTF();
                         out.writeUTF("Value " + value + " received by server");
+                        logMessage("Value " + value + " received by server");
 
                         // Write key, value to hMap
                         hMap.put(key, value);
-                        out.writeUTF(key + value + " have been written to the server");
+                        out.writeUTF("Key: " + key + " Value: " +  value + " have been written to the server");
+                        logMessage("Key: " + key + " Value: " +  value + " have been written to the server");
 
                     } else if(operation.equals("GET")) {
                         // confirm to server that GET operation is commencing
                         out.writeUTF("Server initializing GET operation");
+                        logMessage("Server initializing GET operation");
 
                         String key = in.readUTF();
                         out.writeUTF("Key " + key + " received by server");
+                        logMessage(("Key " + key + " received by server"));
 
                         if(hMap.containsKey(key)) {
                             // Return value to client
                             String value = hMap.get(key);
-                            out.writeUTF(value);
+                            out.writeUTF("Value for " + key + ": " + value);
+                            logMessage("Value for " + key + ": " + value);
 
                         } else { // If key cannot be found in hMap
                             // Return 'cannot be found' message to client
                             out.writeUTF("Key " + key + " cannot be found");
+                            logMessage("Key " + key + " cannot be found");
 
                         }
 
                     } else if(operation.equals("DELETE")) {
                         // confirm to server that DELETE operation is commencing
                         out.writeUTF("Server initializing DELETE operation");
+                        logMessage("Server initializing DELETE operation");
 
                         String key = in.readUTF();
                         out.writeUTF("Key " + key + " received by server");
+                        logMessage("Key " + key + " received by server");
 
                         if(hMap.containsKey(key)) {
                             // If key exists, delete key from hMap
                             hMap.remove(key);
                             out.writeUTF("Key " + key + " deleted from server");
+                            logMessage("Key " + key + " deleted from server");
                         } else {
                             // If key is not found in server
                             out.writeUTF("Key " + key +  " cannot be found in server");
+                            logMessage("Key " + key +  " cannot be found in server");
                         }
 
                     } else {
                         // Faulty operation provided, send back error message
-                        // TODO: figure out error message here
-                        out.writeUTF("Faulty operation detected");
+                        out.writeUTF("SERVER ERROR: Faulty operation detected");
+                        logMessage("SERVER ERROR: Faulty operation detected");
                     }
 
                 } catch (Exception e) {
-                    // TODO: logging
-                    System.out.println("Error handling client request: " + e.getMessage());
+                    logMessage("Error handling client request: " + e.getMessage());
                 } finally {
                     clientSocket.close();
-                    System.out.println("Client connection closed");
+                    logMessage("Client connection to" + ip + " " + port + " closed");
                 }
             }
         } catch (UnknownHostException e) {
-            // TODO: logging
-            throw new RuntimeException(e);
+            logMessage("UnknownHostException: " + e.getMessage());
         } catch (IOException e) {
-            // TODO: logging
-            //throw new RuntimeException(e);
-            System.out.println("RuntimeException " + e.getMessage());
+            logMessage("RuntimeException " + e.getMessage());
         }
 
     }
@@ -135,24 +147,31 @@ public class Server {
                 DatagramPacket typePacket = new DatagramPacket(buffer, buffer.length);
                 s.receive(typePacket); // Get type of request
                 String typeMsg = new String(typePacket.getData(), 0, typePacket.getLength());
-                System.out.println("1 " + typeMsg);
+
+                logMessage("Connection accepted on IP " + ip + "port " + port + " over UDP");
+                logMessage("Received " + typeMsg + " request from " + typePacket.getAddress() + " port " + typePacket.getPort());
 
                 // Get key from client
                 DatagramPacket keyPacket = new DatagramPacket(buffer, buffer.length);
                 s.receive(keyPacket); // Get type of request
                 String keyMsg = new String(keyPacket.getData(), 0, keyPacket.getLength());
-                System.out.println("2" + keyMsg);
 
+                logMessage("Key " + keyMsg + "from " + typePacket.getAddress() + " port " +
+                        typePacket.getPort() + " received by the server");
 
                 if(typeMsg.equals("PUT")) {
                     // If operation is PUT, retrieve value
                     DatagramPacket valPacket = new DatagramPacket(buffer, buffer.length);
-                    s.receive(valPacket); // Get type of request
+                    s.receive(valPacket);
                     String valMsg = new String(valPacket.getData(), 0, valPacket.getLength());
-                    System.out.println("3 " + valMsg);
+                    logMessage("Value " + valMsg + "from " + typePacket.getAddress() + " port " +
+                            typePacket.getPort() + " received by the server");
 
                     hMap.put(keyMsg, valMsg);
 
+                    logMessage("Key: " + keyMsg + " Value: " +  valMsg + " have been written to the server");
+
+                    // Send confirmation to client of successful operation
                     byteResponse = ("Entry for " + keyMsg + " successfully created").getBytes();
                     DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
                             typePacket.getAddress(), typePacket.getPort());
@@ -160,10 +179,11 @@ public class Server {
 
                 } else if (typeMsg.equals("GET")) {
                     if(hMap.containsKey(keyMsg)) { // if key exists, return value
-                        val = hMap.get(keyMsg);
+                        val = "Value for " + keyMsg + ": " + hMap.get(keyMsg);
                     } else { // Else return 'cannot be found' message
                         val = ("Key " + keyMsg + " cannot be found in server");
                     }
+                    logMessage(val);
                     byteResponse = val.getBytes();
                     DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
                             typePacket.getAddress(), typePacket.getPort());
@@ -178,6 +198,7 @@ public class Server {
                         val = ("Key " + keyMsg + " cannot be found in server");
 
                     }
+                    logMessage(val);
                     byteResponse = val.getBytes();
                     DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
                             typePacket.getAddress(), typePacket.getPort());
@@ -185,8 +206,8 @@ public class Server {
 
                 } else {
                     // Faulty operation provided
-                    // TODO: send error message
-                    byteResponse = "Faulty operation detected".getBytes();
+                    logMessage("SERVER ERROR: Faulty operation detected");
+                    byteResponse = "SERVER ERROR: Faulty operation detected".getBytes();
                     DatagramPacket response = new DatagramPacket(byteResponse, byteResponse.length,
                             typePacket.getAddress(), typePacket.getPort());
                     s.send(response);
@@ -194,11 +215,9 @@ public class Server {
             }
 
         } catch (SocketException e) {
-            // TODO: logging
-            throw new RuntimeException(e);
+            logMessage(e.getMessage());
         } catch (IOException e) {
-            // TODO: logging
-            throw new RuntimeException(e);
+            logMessage(e.getMessage());
         }
     }
 
@@ -214,26 +233,41 @@ public class Server {
             int selection = scanner.nextInt();
 
             if (selection == 1) {
-                System.out.println("TCP Communication Selected");
+                logMessage("TCP Communication Selected");
                 TCPServer(serverIP, port, hMap);
 
             } else if (selection == 2) {
-                System.out.println("UDP Communication Selected");
+                logMessage("UDP Communication Selected");
                 UDPServer(serverIP, port, hMap);
 
             } else { // Rerun if input doesn't match '1' or '2'
-                System.out.println("Invalid Input");
+                logMessage("Invalid Input");
                 askForCommType(scanner, serverIP, port, hMap);
             }
         } catch (InputMismatchException e) {
-            System.out.println("Input mismatch detected: exiting");
+            logMessage("Input mismatch detected: exiting");
         }
+    }
+
+    /**
+     * Gets current system time and prints Client output in MM-dd-yyyy HH:mm:ss.SSS format.
+     * @param message The message to be printed.
+     */
+    public static void logMessage(String message) {
+        long currSystemTime = System.currentTimeMillis(); // Get current system time
+
+        // Convert system time to human-readable format
+        Date date = new Date(currSystemTime);
+        SimpleDateFormat SDF = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
+        String time = SDF.format(date);
+
+        System.out.println(time + " -- " + message);
     }
 
 
     public static void main(String[] args) {
         if(args.length != 2){
-            System.out.println("Proper input format must be 'java Server.java <server_ip> <port>'");
+            logMessage("Proper input format must be 'java Server.java <server_ip> <port>'");
             return;
         }
 
@@ -248,7 +282,7 @@ public class Server {
             port = Integer.parseInt(args[1]);
 
         } catch (Exception e) {
-            System.out.println("<server_ip> must be type String and <port> must be type int");
+            logMessage("<server_ip> must be type String and <port> must be type int");
         }
 
         // Create scanner for selecting TCP or UDP
