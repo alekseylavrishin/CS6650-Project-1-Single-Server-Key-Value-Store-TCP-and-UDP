@@ -16,12 +16,14 @@ public class Client {
      * @throws Exception Throws exception if the server connection is interrupted or unsuccessful.
      */
     public static void TCPClient(String serverIP, int port) throws Exception {
+        callTestTCP(serverIP, port); // Programmatically test operations on server
+
         Socket s = null;
 
         try {
             // Connect to server
             s = new Socket(serverIP, port);
-
+            logMessage("Connected to server on " + serverIP + " " + port);
             // Input and Output streams for server communication
             DataInputStream in = new DataInputStream(s.getInputStream());
             DataOutputStream out = new DataOutputStream(s.getOutputStream());
@@ -68,6 +70,7 @@ public class Client {
             logMessage("ERROR: " + e.getMessage());
         } finally {
             if(s != null && !s.isClosed()) {
+                logMessage("Connection to server terminated");
                 s.close();
             }
         }
@@ -107,11 +110,75 @@ public class Client {
     }
 
     /**
+     * Programmatically performs TCP GET, PUT, DELETE operations on the server.
+     * @param serverIP The IP Address or hostname of the server.
+     * @param port The port number the server is listening on.
+     * @param key The key the server performs operations on.
+     * @param value The value the server performs operations on.
+     * @param type The type of operation performed by the server - GET, PUT, DELETE.
+     */
+    public static void testTCP(String serverIP, int port, String key, String value, String type){
+        Socket s = null;
+
+        try {
+            // Connect to server
+            s = new Socket(serverIP, port);
+
+            // Input and Output streams for server communication
+            DataInputStream in = new DataInputStream(s.getInputStream());
+            DataOutputStream out = new DataOutputStream(s.getOutputStream());
+
+            TCPOperation(key, value, type, in, out);
+            s.close();
+
+        } catch (UnknownHostException e) {
+            logMessage("ERROR: " + e.getMessage());
+        } catch (IOException e) {
+            logMessage("ERROR: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Calls the testTCP function to programmatically test PUT, GET, DELETE operations on the server.
+     * The test operations are hardcoded in this function.
+     * @param serverIP The IP Address or hostname of the server.
+     * @param port The port number the server is listening on.
+     */
+    public static void callTestTCP(String serverIP, int port){
+        // Programmatically perform 5 PUT operations over TCP
+        testTCP(serverIP, port, "Key1", "Value1", "PUT");
+        testTCP(serverIP, port, "Key2", "Value2", "PUT");
+        testTCP(serverIP, port, "Key3", "Value3", "PUT");
+        testTCP(serverIP, port, "Key4", "Value4", "PUT");
+        testTCP(serverIP, port, "Key5", "Value5", "PUT");
+
+        // Programmatically perform 5 GET operations over TCP
+        testTCP(serverIP, port, "Key1", "Value1", "GET");
+        testTCP(serverIP, port, "Key2", "Value2", "GET");
+        testTCP(serverIP, port, "Key3", "Value3", "GET");
+        testTCP(serverIP, port, "Key4", "Value4", "GET");
+        testTCP(serverIP, port, "Key5", "Value5", "GET");
+
+        // Programmatically perform 5 DELETE operations over TCP
+        testTCP(serverIP, port, "Key1", "Value1", "DELETE");
+        testTCP(serverIP, port, "Key2", "Value2", "DELETE");
+        testTCP(serverIP, port, "Key3", "Value3", "DELETE");
+        testTCP(serverIP, port, "Key4", "Value4", "DELETE");
+        testTCP(serverIP, port, "Key5", "Value5", "DELETE");
+
+        // Create 2 additional objects to populate server
+        testTCP(serverIP, port, "Key1", "Value1", "PUT");
+        testTCP(serverIP, port, "Key2", "Value2", "PUT");
+    }
+
+    /**
      * Performs communication with the server over UDP.
      * @param serverIP The IP Address or hostname of the server.
      * @param port The port number the server is listening on.
      */
     public static void UDPClient(String serverIP, int port){
+        callTestUDP(serverIP, port);
+
         DatagramSocket s = null;
 
         try {
@@ -120,7 +187,7 @@ public class Client {
 
             // Determines IP Address of the server given a hostname or IP
             InetAddress host = InetAddress.getByName(serverIP);
-
+            logMessage("Connected to server on " + host + " " + port);
             Scanner scanner = new Scanner(System.in);
 
             // Choose type of operation
@@ -169,6 +236,7 @@ public class Client {
         } finally {
             if(s != null) {
                 s.close();
+                logMessage("Connection to server terminated");
             }
         }
     }
@@ -211,6 +279,68 @@ public class Client {
 
         s.close(); // Close socket
 
+    }
+
+    /**
+     * Programmatically performs UDP GET, PUT, DELETE operations on the server.
+     * @param serverIP The IP Address or hostname of the server.
+     * @param port The port number the server is listening on.
+     * @param key The key the server performs operations on.
+     * @param value The value the server performs operations on.
+     * @param type The type of operation performed by the server - GET, PUT, DELETE.
+     */
+    public static void testUDP(String serverIP, int port, String key, String value, String type) {
+        DatagramSocket s = null;
+
+        try {
+            s = new DatagramSocket();
+            s.setSoTimeout(10000); // Set timeout to 10 seconds
+
+            // Determines IP Address of the server given a hostname or IP
+            InetAddress host = InetAddress.getByName(serverIP);
+            UDPOperation(key, value, type, host, port, s);
+
+
+        } catch (SocketException e) {
+            logMessage("ERROR: " + e.getMessage());
+        } catch (UnknownHostException e) {
+            logMessage("ERROR: " + e.getMessage());
+        } catch (IOException e) {
+            logMessage("ERROR: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Calls the testUDP function to programmatically test PUT, GET, DELETE operations on the server.
+     * The test operations are hardcoded in this function.
+     * @param serverIP The IP Address or hostname of the server.
+     * @param port The port number the server is listening on.
+     */
+    public static void callTestUDP(String serverIP, int port){
+        // Programmatically perform 5 PUT operations over UDP
+        testUDP(serverIP, port, "Key1", "Value1", "PUT");
+        testUDP(serverIP, port, "Key2", "Value2", "PUT");
+        testUDP(serverIP, port, "Key3", "Value3", "PUT");
+        testUDP(serverIP, port, "Key4", "Value4", "PUT");
+        testUDP(serverIP, port, "Key5", "Value5", "PUT");
+
+        // Programmatically perform 5 GET operations over UDP
+        testUDP(serverIP, port, "Key1", "Value1", "GET");
+        testUDP(serverIP, port, "Key2", "Value2", "GET");
+        testUDP(serverIP, port, "Key3", "Value3", "GET");
+        testUDP(serverIP, port, "Key4", "Value4", "GET");
+        testUDP(serverIP, port, "Key5", "Value5", "GET");
+
+        // Programmatically perform 5 DELETE operations over UDP
+        testUDP(serverIP, port, "Key1", "Value1", "DELETE");
+        testUDP(serverIP, port, "Key2", "Value2", "DELETE");
+        testUDP(serverIP, port, "Key3", "Value3", "DELETE");
+        testUDP(serverIP, port, "Key4", "Value4", "DELETE");
+        testUDP(serverIP, port, "Key5", "Value5", "DELETE");
+
+        // Create 2 additional objects to populate server
+        testUDP(serverIP, port, "Key1", "Value1", "PUT");
+        testUDP(serverIP, port, "Key2", "Value2", "PUT");
     }
 
     /**
